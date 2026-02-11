@@ -4,7 +4,7 @@ import { DynamoDBDocumentClient, GetCommand, PutCommand, DeleteCommand } from '@
 // DynamoDB setup
 const client = new DynamoDBClient({ region: 'us-east-1' });
 const docClient = DynamoDBDocumentClient.from(client);
-const TABLE_NAME = process.env.DYNAMODB_TABLE_NAME || 'linq-blue-agent-example';
+const TABLE_NAME = process.env.DYNAMODB_TABLE_NAME || 'blooio-agent-example';
 
 // TTL: 1 hour for conversations
 const CONVERSATION_TTL_SECONDS = 60 * 60;

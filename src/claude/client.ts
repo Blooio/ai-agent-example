@@ -7,24 +7,20 @@ const openai = new OpenAI();
 
 const SYSTEM_PROMPT = `You are Claude, Anthropic's AI assistant, accessible via text message as "Claude Sullivan".
 
-This is a demo app built on the Linq Blue v3 API, created by Patrick Sullivan (CTO of Linq) to showcase what's possible with programmatic messaging. You're Claude under the hood - be upfront about that if asked.
+This is a demo app built on the Blooio v2 API to showcase what's possible with programmatic iMessage automation. You're Claude under the hood - be upfront about that if asked.
 
-Linq Blue supports both iMessage and RCS (Rich Communication Services), so you can reach people on both iPhone and Android with rich features like reactions, typing indicators, and read receipts.
+Blooio enables iMessage automation with features like reactions, typing indicators, and read receipts.
 
-Since this is a demo, people may ask you to show off features like reactions, message effects (fireworks, confetti, etc.), or other messaging capabilities. Feel free to demonstrate these when asked! It's part of what makes this demo cool. Note: some features like screen effects are iMessage-only, but reactions and typing indicators work on both iMessage and RCS.
+Since this is a demo, people may ask you to show off features like reactions or other messaging capabilities. Feel free to demonstrate these when asked! It's part of what makes this demo cool.
 
 ## Demo Capabilities
 If someone asks what you can do or wants to see features, here's what's available:
 
-**iMessage Reactions:** Standard tapbacks (love ❤️, like 👍, dislike 👎, laugh 😂, emphasize !!, question ?) OR any custom emoji (🔥, 💯, 🎉, 👀, 🙌, etc.)
-
-**Screen Effects (full-screen animations):** confetti, fireworks, lasers, balloons, sparkles, celebration, hearts, love, happy_birthday, echo, spotlight
-
-**Bubble Effects (message animations):** slam (impact), loud (big text), gentle (soft), invisible_ink (hidden until swiped)
+**iMessage Reactions:** Standard tapbacks - love ❤️, like 👍, dislike 👎, laugh 😂, emphasize !!, question ?
 
 **Image generation:** I can create images! Just ask me to draw, generate, or create a picture of something.
 
-**Other features:** web search for real-time info, image analysis, voice memo transcription, contact card sharing, rename group chats, set group chat icons
+**Other features:** web search for real-time info, image analysis, voice memo transcription, rename group chats, set group chat icons
 
 **Voice memos:** When someone sends a voice memo, it gets automatically transcribed and you'll see it as [Voice memo transcript: "..."]. Respond naturally to what they said - don't mention the transcription process, just reply as if they texted you.
 
@@ -75,11 +71,7 @@ You can search the web for current information like weather, news, sports scores
 ## Reactions
 You can react to messages using iMessage reactions, but TEXT RESPONSES ARE PREFERRED.
 
-You can use standard tapbacks OR any custom emoji:
-- Standard: love ❤️, like 👍, dislike 👎, laugh 😂, emphasize !!, question ?
-- Custom: ANY emoji works! 🔥 💯 🎉 👀 🙌 🤔 😭 💀 ✨ 🫡 etc.
-
-Custom emoji reactions are more expressive and fun - use them when a standard tapback doesn't capture the vibe!
+Standard tapbacks only: love ❤️, like 👍, dislike 👎, laugh 😂, emphasize !!, question ?
 
 CRITICAL REACTION RULES:
 1. DEFAULT to text responses - reactions are supplementary, not primary
@@ -93,26 +85,12 @@ When to use reactions (sparingly):
 - love: Heartfelt news (promotions, engagements)
 - like: Simple acknowledgment when no text response needed
 - laugh: Genuinely funny messages
-- Custom emoji: When you want to be more expressive (🔥 for something cool, 💀 for something hilarious, etc.)
+- emphasize: Something important or impressive
+- question: Something confusing or surprising
 
 ANTI-LOOP PROTECTION: If the conversation feels like it's become mostly reactions, BREAK THE PATTERN by sending a proper text response. People want to talk to you, not just get tapbacks.
 
-NOTE: You might see "[reacted with X]" or "[sent X effect]" in conversation history - these are just system markers showing what you did. NEVER write these in your actual responses!
-
-## Message Effects
-You can add iMessage effects to your responses, but ONLY when explicitly requested or for truly special moments.
-
-CRITICAL RULES FOR EFFECTS:
-1. ALWAYS write a normal text response FIRST - effects are ADDITIONS to your text, not replacements
-2. NEVER use send_effect without also writing text in your response
-3. Do NOT use effects unless someone specifically asks for one (like "send fireworks" or "show me lasers")
-4. For normal conversation, just respond with text - no effects needed
-
-Available effects (only use when requested):
-- Screen: confetti, fireworks, lasers, balloons, sparkles, celebration, hearts, happy_birthday
-- Bubble: slam, loud, gentle, invisible_ink
-
-DEFAULT BEHAVIOR: Just write a text response. Only add an effect if explicitly asked.`;
+NOTE: You might see "[reacted with X]" in conversation history - these are just system markers showing what you did. NEVER write these in your actual responses!`;
 
 function buildSystemPrompt(chatContext?: ChatContext): string {
   let prompt = SYSTEM_PROMPT;
@@ -150,20 +128,13 @@ In group chats:
 - Don't react as often in groups - it can feel spammy`;
   }
 
-  if (chatContext?.incomingEffect) {
-    prompt += `\n\n## Incoming Message Effect
-The user sent their message with a ${chatContext.incomingEffect.type} effect: "${chatContext.incomingEffect.name}". You can acknowledge this if relevant (e.g., "nice ${chatContext.incomingEffect.name} effect!").`;
-  }
-
   if (chatContext?.service) {
     prompt += `\n\n## Messaging Platform
 This conversation is happening over ${chatContext.service}.`;
     if (chatContext.service === 'iMessage') {
-      prompt += ` All features are available (reactions, effects, typing indicators, read receipts).`;
-    } else if (chatContext.service === 'RCS') {
-      prompt += ` Reactions and typing indicators work, but screen/bubble effects are not available on RCS.`;
+      prompt += ` All features are available (reactions, typing indicators, read receipts).`;
     } else if (chatContext.service === 'SMS') {
-      prompt += ` This is basic SMS - no reactions, effects, or typing indicators. Keep responses simple and concise.`;
+      prompt += ` This is basic SMS - no reactions or typing indicators. Keep responses simple and concise.`;
     }
   }
 
@@ -172,42 +143,17 @@ This conversation is happening over ${chatContext.service}.`;
 
 const REACTION_TOOL: Anthropic.Tool = {
   name: 'send_reaction',
-  description: 'Send an iMessage reaction to the user\'s message. Use standard tapbacks (love, like, laugh, etc.) OR any custom emoji. Custom emoji reactions are great for more expressive responses!',
+  description: 'Send an iMessage reaction (tapback) to the user\'s message. Use sparingly - text responses are preferred.',
   input_schema: {
     type: 'object' as const,
     properties: {
       type: {
         type: 'string',
-        enum: ['love', 'like', 'dislike', 'laugh', 'emphasize', 'question', 'custom'],
-        description: 'The reaction type. Use "custom" to send any emoji.',
-      },
-      emoji: {
-        type: 'string',
-        description: 'Required when type is "custom". The emoji to react with (e.g., "🔥", "💯", "🎉", "👀", "🙌").',
+        enum: ['love', 'like', 'dislike', 'laugh', 'emphasize', 'question'],
+        description: 'The standard tapback reaction type.',
       },
     },
     required: ['type'],
-  },
-};
-
-const EFFECT_TOOL: Anthropic.Tool = {
-  name: 'send_effect',
-  description: 'Add an iMessage effect to your text response. ONLY use when the user explicitly asks for an effect (e.g. "send lasers", "show me fireworks"). You MUST also write a text message - the effect enhances your text, it does not replace it. Do NOT use for normal conversation.',
-  input_schema: {
-    type: 'object' as const,
-    properties: {
-      effect_type: {
-        type: 'string',
-        enum: ['screen', 'bubble'],
-        description: 'Whether this is a full-screen effect or a bubble effect',
-      },
-      effect: {
-        type: 'string',
-        enum: ['confetti', 'fireworks', 'lasers', 'sparkles', 'celebration', 'hearts', 'love', 'balloons', 'happy_birthday', 'echo', 'spotlight', 'slam', 'loud', 'gentle', 'invisible_ink'],
-        description: 'The specific effect to use',
-      },
-    },
-    required: ['effect_type', 'effect'],
   },
 };
 
@@ -285,20 +231,14 @@ const WEB_SEARCH_TOOL = {
 } as unknown as Anthropic.Tool;
 
 export type StandardReactionType = 'love' | 'like' | 'dislike' | 'laugh' | 'emphasize' | 'question';
-export type ReactionType = StandardReactionType | 'custom';
-export type MessageEffect = { type: 'screen' | 'bubble'; name: string };
 
 export type Reaction = {
   type: StandardReactionType;
-} | {
-  type: 'custom';
-  emoji: string;
 };
 
 export interface ChatResponse {
   text: string | null;
   reaction: Reaction | null;
-  effect: MessageEffect | null;
   renameChat: string | null;
   rememberedUser: { name?: string; fact?: string; isForSender?: boolean } | null;
   generatedImage: { url: string; prompt: string } | null;
@@ -378,7 +318,6 @@ export interface ChatContext {
   isGroupChat: boolean;
   participantNames: string[];
   chatName: string | null;
-  incomingEffect?: { type: 'screen' | 'bubble'; name: string };
   senderHandle?: string;
   senderProfile?: UserProfile | null;
   service?: MessageService;
@@ -407,7 +346,6 @@ function formatHistoryForClaude(messages: StoredMessage[], isGroupChat: boolean)
 export async function chat(chatId: string, userMessage: string, images: ImageInput[] = [], audio: AudioInput[] = [], chatContext?: ChatContext): Promise<ChatResponse> {
   const emptyResponse = {
     reaction: null,
-    effect: null,
     renameChat: null,
     rememberedUser: null,
     generatedImage: null,
@@ -514,7 +452,7 @@ export async function chat(chatId: string, userMessage: string, images: ImageInp
     const formattedHistory = formatHistoryForClaude(history, chatContext?.isGroupChat ?? false);
 
     // Build tools list - some tools only available in group chats
-    const tools: Anthropic.Tool[] = [REACTION_TOOL, EFFECT_TOOL, REMEMBER_USER_TOOL, GENERATE_IMAGE_TOOL, WEB_SEARCH_TOOL];
+    const tools: Anthropic.Tool[] = [REACTION_TOOL, REMEMBER_USER_TOOL, GENERATE_IMAGE_TOOL, WEB_SEARCH_TOOL];
     if (chatContext?.isGroupChat) {
       tools.push(RENAME_CHAT_TOOL, SET_GROUP_ICON_TOOL);
     }
@@ -530,7 +468,6 @@ export async function chat(chatId: string, userMessage: string, images: ImageInp
     // Extract text response and tool calls
     const textParts: string[] = [];
     let reaction: Reaction | null = null;
-    let effect: MessageEffect | null = null;
     let renameChat: string | null = null;
     let rememberedUser: { name?: string; fact?: string; isForSender?: boolean } | null = null;
     let generatedImage: { url: string; prompt: string } | null = null;
@@ -540,18 +477,9 @@ export async function chat(chatId: string, userMessage: string, images: ImageInp
       if (block.type === 'text') {
         textParts.push(block.text);
       } else if (block.type === 'tool_use' && block.name === 'send_reaction') {
-        const input = block.input as { type: ReactionType; emoji?: string };
-        if (input.type === 'custom' && input.emoji) {
-          reaction = { type: 'custom', emoji: input.emoji };
-          console.log(`[claude] Wants to react with custom emoji: ${input.emoji}`);
-        } else if (input.type !== 'custom') {
-          reaction = { type: input.type as StandardReactionType };
-          console.log(`[claude] Wants to react with: ${input.type}`);
-        }
-      } else if (block.type === 'tool_use' && block.name === 'send_effect') {
-        const input = block.input as { effect_type: 'screen' | 'bubble'; effect: string };
-        effect = { type: input.effect_type, name: input.effect };
-        console.log(`[claude] Wants to send with effect: ${input.effect_type} - ${input.effect}`);
+        const input = block.input as { type: StandardReactionType };
+        reaction = { type: input.type };
+        console.log(`[claude] Wants to react with: ${input.type}`);
       } else if (block.type === 'tool_use' && block.name === 'rename_group_chat') {
         const input = block.input as { name: string };
         renameChat = input.name;
@@ -607,43 +535,19 @@ export async function chat(chatId: string, userMessage: string, images: ImageInp
     const textResponse = textParts.length > 0 ? textParts.join('\n') : null;
 
     // Add assistant response to history (only text part, strip --- delimiters for cleaner context)
-    // Note: image generation is handled separately in index.ts after sending text first
     if (textResponse) {
       const historyMessage = textResponse.split('---').map(m => m.trim()).filter(m => m).join(' ');
       await addMessage(chatId, 'assistant', historyMessage);
-    } else if (effect) {
-      // Save effect-only responses so Claude knows what it did (prevents effect loops)
-      await addMessage(chatId, 'assistant', `[sent ${effect.name} effect]`);
     } else if (reaction) {
       // Save reaction-only responses so Claude knows what it did (prevents reaction loops)
-      const reactionDisplay = reaction.type === 'custom' ? (reaction as { type: 'custom'; emoji: string }).emoji : reaction.type;
-      await addMessage(chatId, 'assistant', `[reacted with ${reactionDisplay}]`);
+      await addMessage(chatId, 'assistant', `[reacted with ${reaction.type}]`);
     }
 
-    return { text: textResponse, reaction, effect, renameChat, rememberedUser, generatedImage, groupChatIcon };
+    return { text: textResponse, reaction, renameChat, rememberedUser, generatedImage, groupChatIcon };
   } catch (error) {
     console.error('[claude] API error:', error);
     throw error;
   }
-}
-
-/**
- * Simple text-only completion for follow-up requests (no tools).
- */
-export async function getTextForEffect(effectName: string): Promise<string> {
-  const response = await client.messages.create({
-    model: 'claude-3-5-haiku-20241022',
-    max_tokens: 100,
-    messages: [{
-      role: 'user',
-      content: `Write a very short, fun message (under 10 words) to send with a ${effectName} iMessage effect. Just the message, nothing else.`
-    }],
-  });
-
-  if (response.content[0].type === 'text') {
-    return response.content[0].text;
-  }
-  return `✨ ${effectName}! ✨`;
 }
 
 export type GroupChatAction = 'respond' | 'react' | 'ignore';
@@ -736,8 +640,7 @@ Examples:
       else reaction = { type: 'like' }; // default reaction
     }
 
-    const reactionDisplay = reaction ? (reaction.type === 'custom' ? (reaction as { type: 'custom'; emoji: string }).emoji : reaction.type) : '';
-    console.log(`[claude] groupChatAction (${Date.now() - start}ms): "${message.substring(0, 50)}..." -> ${action}${reactionDisplay ? `:${reactionDisplay}` : ''}`);
+    console.log(`[claude] groupChatAction (${Date.now() - start}ms): "${message.substring(0, 50)}..." -> ${action}${reaction ? `:${reaction.type}` : ''}`);
 
     return { action, reaction };
   } catch (error) {

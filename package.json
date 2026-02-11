@@ -1,23 +1,21 @@
 {
-  "name": "linq-blue-agent-example",
+  "name": "blooio-ai-agent-example",
   "version": "1.0.0",
-  "description": "Example AI agent built on Linq Messaging API - showcases Claude AI integration with iMessage, web search, image generation, and more",
+  "description": "AI agent powered by Claude on the Blooio iMessage API - web search, image generation, reactions, voice memos, and more",
   "main": "dist/index.js",
-  "author": "Linq Technologies Incorporated",
+  "author": "Blooio",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/linq-team/ai-agent-example.git"
+    "url": "https://github.com/blooio/ai-agent-example.git"
   },
   "keywords": [
-    "linq",
-    "linq-blue",
+    "blooio",
     "imessage",
     "claude",
     "anthropic",
     "ai",
     "chatbot",
-    "sms",
     "messaging",
     "api",
     "example",
