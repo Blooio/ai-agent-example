@@ -2,28 +2,30 @@
 
 An AI-powered iMessage agent built on the [Blooio API](https://blooio.com). Uses Claude (Anthropic) to chat with people over iMessage, complete with web search, image generation, reactions, voice memo transcription, and more.
 
+![Demo](demo.png)
+
 Get it running in under a minute.
 
 ---
 
 ## Why Blooio?
 
-If you've used Linq Blue, you already know the pain: opaque pricing, $500+ setup fees, no public API docs, and unreliable delivery.
+If you've used Linq Blue, you already know the pain: opaque pricing, $500+ setup fees, and unreliable delivery.
 
 ![Linq API Reliability](linq-api-reliability.png)
 
-Blooio is a modern replacement with transparent pricing, public API documentation, and features Linq doesn't support like RCS, iMessage effects, and message reactions.
+Blooio is a modern replacement with transparent pricing, a free trial, and an [MCP server](https://blooio.com/integrations/mcp) so AI agents can manage your messaging out of the box.
 
 | | Blooio | Linq Blue |
 |---|---|---|
 | Setup fees | None | $500+ |
 | Pricing | [Transparent](https://blooio.com/pricing) | Must book a call |
 | Free trial | Yes, no credit card | No |
-| API docs | [Public](https://docs.blooio.com) | None |
-| RCS support | Yes | No |
-| iMessage effects | Yes | No |
-| Message reactions | Yes | No |
-| MCP server | Yes | No |
+| API docs | [Public](https://docs.blooio.com) | Yes |
+| RCS support | Yes | Yes |
+| iMessage effects | Yes | Yes |
+| Message reactions | Yes | Yes |
+| [MCP server](https://blooio.com/integrations/mcp) | Yes | No |
 
 [Full comparison: Blooio vs Linq Blue](https://blooio.com/compare/blooio-vs-linq-blue)
 
